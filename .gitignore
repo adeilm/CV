@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.onnx
+daisee_data/
+frames/
+fer_data/
+*.zip
+.ipynb_checkpoints/
+.idea/
+.vscode/
+*.log
