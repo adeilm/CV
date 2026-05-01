@@ -35,6 +35,14 @@ class StudentTracker:
             closed = sum(1 for _, _, c in self.ear_samples if c)
             return closed / len(self.ear_samples)
 
+    def reset(self):
+        with self.lock:
+            self.ear_samples.clear()
+
+    def sample_count(self) -> int:
+        with self.lock:
+            return len(self.ear_samples)
+
     def ear_normalized(self) -> float:
         with self.lock:
             if not self.ear_samples:

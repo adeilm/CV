@@ -21,11 +21,12 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
-from eye_detector import EyeDetector
-from pose_estimation import HeadPoseEstimator
-from utils import get_landmarks
-
+# Import config first so its sys.path injection makes vendor modules importable.
 from .config import GAZE_THRESH, ROLL_THRESH_DEG, PITCH_THRESH_DEG, YAW_THRESH_DEG
+
+from eye_detector import EyeDetector  # noqa: E402  (vendor, post-sys.path)
+from pose_estimation import HeadPoseEstimator  # noqa: E402
+from utils import get_landmarks  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -78,6 +79,7 @@ def extract_signals(frame: np.ndarray) -> dict:
         "ear": None, "gaze": None,
         "roll": None, "pitch": None, "yaw": None,
         "face_crop": None,
+        "landmarks": None,
     }
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     lms = face_mesh.process(rgb).multi_face_landmarks
@@ -86,11 +88,18 @@ def extract_signals(frame: np.ndarray) -> dict:
 
     out["face_detected"] = True
     landmarks = get_landmarks(lms)
+    out["landmarks"] = landmarks
     frame_size = (frame.shape[1], frame.shape[0])
 
-    out["ear"] = eye_det.get_EAR(landmarks=landmarks)
+    ear = eye_det.get_EAR(landmarks=landmarks)
+    out["ear"] = ear if (ear is not None and np.isfinite(ear)) else None
+
     gray3 = cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
-    out["gaze"] = eye_det.get_Gaze_Score(frame=gray3, landmarks=landmarks, frame_size=frame_size)
+    # Vendor get_Gaze_Score can divide by zero when iris/eye_center degenerate;
+    # silence the warning + drop non-finite results so fuse_scores uses neutral default.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        gaze = eye_det.get_Gaze_Score(frame=gray3, landmarks=landmarks, frame_size=frame_size)
+    out["gaze"] = gaze if (gaze is not None and np.isfinite(gaze)) else None
 
     try:
         _, roll, pitch, yaw = head_pose.get_pose(

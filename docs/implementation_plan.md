@@ -51,20 +51,6 @@ at inference time.
 | Framework | ONNX opset 15, loadable with `onnxruntime` |
 | Size | ~9 MB (MobileNetV2 base) |
 
-## FER2013 fallback (only if DAiSEE unavailable)
-
-Maps FER2013 emotions → 4 affective classes:
-
-| FER label | Mapped to |
-|---|---|
-| angry, disgust | frustration |
-| fear, surprise | confusion |
-| happy, neutral | engagement |
-| sad | boredom |
-
-> **Warning.** Approximate. Real model must train on DAiSEE for
-> meaningful engagement detection.
-
 ## Verification
 
 Automated (in notebook):

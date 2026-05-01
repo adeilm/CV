@@ -11,6 +11,12 @@ pip install -r requirements.txt
 python cv_pipeline.py            # serves on :8005
 ```
 
+Or run the local webcam demo (no Mongo, no HTTP):
+
+```bash
+python tools/live_demo.py        # see tools/README.md
+```
+
 Health check:
 ```bash
 curl http://localhost:8005/cv/health
@@ -32,6 +38,9 @@ app/                    service code (one module per responsibility)
   schemas.py            Pydantic
 notebooks/
   CV_DALI.ipynb         training notebook → produces cv_model.onnx
+tools/
+  README.md             utility scripts overview
+  live_demo.py          local webcam viewer (no HTTP, no Mongo)
 docs/                   ← read first if new to the project
   README.md             docs index + glossary
   architecture.md       components, layered design
