@@ -3,8 +3,9 @@ uvicorn[standard]>=0.27
 pydantic>=2.5
 python-dotenv>=1.0
 pymongo>=4.6
-numpy>=1.24
-opencv-python-headless>=4.8
-mediapipe>=0.10
+numpy>=1.24,<2.0
+opencv-python>=4.8 # Use opencv-python-headless in production containers without GUI
+mediapipe==0.10.14 # Pinned because >=0.10.30 removes mediapipe.solutions
+protobuf<5 # Required to prevent mediapipe from crashing
 onnxruntime>=1.16
-tensorflow>=2.12
+tensorflow==2.16.2 # Pinned for protobuf<5 and Python 3.12 compatibility
