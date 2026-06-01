@@ -20,20 +20,21 @@ at inference time.
 2. **Parse labels** — DAiSEE provides 0–3 ratings on 4 affective columns
    per clip. Convert to single-label by `argmax` across columns. Ties
    prefer engagement.
-3. **Extract face crops** — every 15th frame, OpenCV Haar cascade, largest
-   face, 15% margin, resize to 224×224, save as JPEG into ImageFolder
-   layout under `frames/{Train,Validation,Test}/{boredom,confusion,engagement,frustration}/`.
+3. **Extract face crops** — every 15th frame with a random per-clip offset,
+   MediaPipe FaceMesh crop (same as runtime), 15% margin, resize to 224×224,
+   save as JPEG into ImageFolder layout under
+   `frames/{Train,Validation,Test}/{boredom,confusion,engagement,frustration}/`.
 4. **Build dataset** — `tf.keras.utils.image_dataset_from_directory`,
-   `Rescaling(1/255)` inside the model, train-time augmentation
-   (RandomFlip, RandomBrightness, RandomContrast).
+   `Rescaling(1/255)` inside the model, train-time photometric augmentation
+   (RandomBrightness, RandomContrast, GaussianNoise; no flips).
 5. **Class weights** — `sklearn.utils.compute_class_weight('balanced')`
    to combat engagement majority.
 6. **Architecture** — MobileNetV2 (ImageNet, no top) → GAP → Dense(128, relu)
    → Dense(4, softmax).
 7. **Training** —
    - Phase 1: base frozen, lr=1e-3, 15 epochs, EarlyStopping on val_acc.
-   - Phase 2: unfreeze last 3 layers, lr=1e-4, 15 more epochs.
-8. **Evaluate** — confusion matrix, per-class F1, on test split.
+   - Phase 2: unfreeze last 20 layers, lr=1e-4, 15 more epochs.
+8. **Evaluate** — confusion matrix, per-class F1, macro F1, per-class AUC.
 9. **Export** — `tf2onnx.convert.from_keras` opset 15, write `cv_model.onnx`.
 10. **Verify** — file < 20 MB, output shape (1, 4), softmax sums to ~1.0,
     Keras-vs-ONNX parity within 1e-4.
